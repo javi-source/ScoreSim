@@ -61,4 +61,21 @@ public class SimuladorPartido {
         // 1 (Ganador Local), -1 (Ganador Visitante), 0 (Empate)
         return Integer.compare(golesLocal, golesVisitante);
     }
+
+    /**
+     * Simula un partido de eliminación directa (Knockout).
+     * Si hay empate en los 90 min, se decide por calidad y azar (simulando prórroga/penaltis).
+     */
+    public static Equipo simularPartidoEliminatorio(Equipo e1, Equipo e2) {
+        // 1. Simulamos el tiempo regular usando la lógica de potenciales
+        double fuerzaE1 = (e1.getAtaque() * 0.5) + (e1.getMedio() * 0.3) + (e1.getDefensa() * 0.2);
+        double fuerzaE2 = (e2.getAtaque() * 0.5) + (e2.getMedio() * 0.3) + (e2.getDefensa() * 0.2);
+
+        // 2. Añadimos un factor de azar mayor para representar la tensión de eliminatorias
+        // Esto cubre indirectamente los eventos de prórroga y penaltis
+        double azarE1 = Math.random() * 20;
+        double azarE2 = Math.random() * 20;
+
+        return (fuerzaE1 + azarE1 > fuerzaE2 + azarE2) ? e1 : e2;
+    }
 }

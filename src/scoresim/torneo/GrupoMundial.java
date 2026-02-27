@@ -109,7 +109,7 @@ public class GrupoMundial {
      * Clase interna "POJO" para almacenar el rendimiento de cada equipo.
      * Facilita el cálculo del Goal Average y la clasificación.
      */
-    private static class EstadisticasGrupo {
+    public static class EstadisticasGrupo {
         int puntos = 0;
         int partidos = 0;
         int ganados = 0;
@@ -124,5 +124,86 @@ public class GrupoMundial {
         public int getDiferenciaGoles() {
             return gFavor - gContra;
         }
+    }
+    /**
+     * Genera e imprime la tabla de posiciones actual del grupo.
+     * Ordena por: Puntos > Diferencia de Goles > Goles a Favor.
+     */
+    public void imprimirTabla() {
+        // 1. Convertimos los equipos a una lista para poder ordenarlos
+        List<Equipo> clasificacion = new ArrayList<>(equipos);
+
+        // 2. Algoritmo de ordenación (Comparator)
+        clasificacion.sort((a, b) -> {
+            EstadisticasGrupo sA = tabla.get(a);
+            EstadisticasGrupo sB = tabla.get(b);
+
+            if (sB.puntos != sA.puntos)
+                return Integer.compare(sB.puntos, sA.puntos);
+
+            int difA = sA.getDiferenciaGoles();
+            int difB = sB.getDiferenciaGoles();
+            if (difB != difA)
+                return Integer.compare(difB, difA);
+
+            return Integer.compare(sB.gFavor, sA.gFavor);
+        });
+
+        // 3. Diseño de la tabla por consola
+        System.out.println("\nTABLA DE POSICIONES - " + nombre.toUpperCase());
+        System.out.println("------------------------------------------------------------");
+        System.out.printf("%-18s | %2s | %2s | %2s | %2s | %2s | %2s | %3s\n",
+                "Selección", "PT", "PJ", "PG", "PE", "PP", "GF", "DIF");
+        System.out.println("------------------------------------------------------------");
+
+        for (Equipo e : clasificacion) {
+            EstadisticasGrupo s = tabla.get(e);
+            System.out.printf("%-18s | %2d | %2d | %2d | %2d | %2d | %2d | %3d\n",
+                    e.getNombre(), s.puntos, s.partidos, s.ganados, s.empatados,
+                    s.perdidos, s.gFavor, s.getDiferenciaGoles());
+        }
+        System.out.println("------------------------------------------------------------");
+    }
+    public List<Equipo> getClasificacion() {
+        List<Equipo> clasificados = new ArrayList<>(equipos);
+
+        clasificados.sort((a, b) -> {
+            EstadisticasGrupo sA = tabla.get(a);
+            EstadisticasGrupo sB = tabla.get(b);
+
+            // Comparar Puntos
+            if (sB.puntos != sA.puntos) {
+                return Integer.compare(sB.puntos, sA.puntos);
+            }
+            // Comparar Diferencia de Goles
+            int difA = sA.getDiferenciaGoles();
+            int difB = sB.getDiferenciaGoles();
+            if (difB != difA) {
+                return Integer.compare(difB, difA);
+            }
+            // Comparar Goles a Favor
+            return Integer.compare(sB.gFavor, sA.gFavor);
+        });
+
+        return clasificados;
+    }
+
+    /**
+     * Devuelve el equipo que quedó en la tercera posición del grupo
+     * tras aplicar los criterios de desempate.
+     */
+    public Equipo obtenerTercerLugar() {
+        List<Equipo> clasificacion = getClasificacion(); // El método que ordena la lista
+        return clasificacion.get(2); // Índice 2 es la tercera posición
+    }
+
+    /**
+     * Devuelve las estadísticas de un equipo específico en este grupo.
+     */
+    public EstadisticasGrupo getEstadisticas(Equipo e) {
+        return tabla.get(e);
+    }
+    public String getNombre() {
+        return this.nombre;
     }
 }
