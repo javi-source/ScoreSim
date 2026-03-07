@@ -27,7 +27,8 @@ public class ScoreSimApp {
     public static Map<String, EstadisticasEquipo> ejecutarSimulacionDesdeUI() {
         int numSimulaciones = 10000;
         Map<String, EstadisticasEquipo> historialGlobal = new HashMap<>();
-
+        // ✅ Activar modo rápido: sin DB
+        SimuladorPartido.modoMontecarlo = true;
         System.out.println("Iniciando simulación masiva de 10,000 Mundiales...");
         long tiempoInicio = System.currentTimeMillis();
 
@@ -51,6 +52,7 @@ public class ScoreSimApp {
                 contarFase(historialGlobal, clasificados.get(3).getNombre(), "grupos");
             }
 
+
             List<Equipo> tercerosRanked = Mundial2026.obtenerMejoresTercerosSilencioso(listaGrupos);
             for (int j = 8; j < tercerosRanked.size(); j++) {
                 contarFase(historialGlobal, tercerosRanked.get(j).getNombre(), "grupos");
@@ -58,60 +60,68 @@ public class ScoreSimApp {
 
             ejecutarEliminatorias(p, tercerosRanked, historialGlobal);
         }
-
+        // Desactivar al terminar
+        SimuladorPartido.modoMontecarlo = false;
         long tiempoFin = System.currentTimeMillis();
         imprimirReporteFinal(historialGlobal, numSimulaciones, tiempoFin - tiempoInicio);
         return historialGlobal;
     }
 
     private static void ejecutarEliminatorias(Map<String, Equipo> p, List<Equipo> t, Map<String, EstadisticasEquipo> h) {
-        // DIECISEISAVOS (Perdedores van a historial como "fuera en 16vos")
-        Equipo p73 = resolver(p.get("2A"), p.get("2B"), h, "16vos");
-        Equipo p74 = resolver(p.get("1E"), t.get(0), h, "16vos");
-        Equipo p75 = resolver(p.get("1F"), p.get("2C"), h, "16vos");
-        Equipo p76 = resolver(p.get("1C"), p.get("2F"), h, "16vos");
-        Equipo p77 = resolver(p.get("1I"), t.get(1), h, "16vos");
-        Equipo p78 = resolver(p.get("2E"), p.get("2I"), h, "16vos");
-        Equipo p79 = resolver(p.get("1A"), t.get(2), h, "16vos");
-        Equipo p80 = resolver(p.get("1L"), t.get(3), h, "16vos");
-        Equipo p81 = resolver(p.get("1D"), t.get(4), h, "16vos");
-        Equipo p82 = resolver(p.get("1G"), t.get(5), h, "16vos");
-        Equipo p83 = resolver(p.get("2K"), p.get("2L"), h, "16vos");
-        Equipo p84 = resolver(p.get("1H"), p.get("2J"), h, "16vos");
-        Equipo p85 = resolver(p.get("1B"), t.get(6), h, "16vos");
-        Equipo p86 = resolver(p.get("1J"), p.get("2H"), h, "16vos");
-        Equipo p87 = resolver(p.get("1K"), t.get(7), h, "16vos");
-        Equipo p88 = resolver(p.get("2D"), p.get("2G"), h, "16vos");
+        // DIECISEISAVOS — orden oficial FIFA 2026
+        Equipo p73 = resolver(p.get("2A"), p.get("2B"),  h, "16vos");
+        Equipo p74 = resolver(p.get("1E"), t.get(0),     h, "16vos");
+        Equipo p75 = resolver(p.get("1F"), p.get("2C"),  h, "16vos");
+        Equipo p76 = resolver(p.get("1C"), p.get("2F"),  h, "16vos");
+        Equipo p77 = resolver(p.get("1I"), t.get(1),     h, "16vos");
+        Equipo p78 = resolver(p.get("2E"), p.get("2I"),  h, "16vos");
+        Equipo p79 = resolver(p.get("1A"), t.get(2),     h, "16vos");
+        Equipo p80 = resolver(p.get("1L"), t.get(3),     h, "16vos");
+        Equipo p81 = resolver(p.get("1D"), t.get(4),     h, "16vos");
+        Equipo p82 = resolver(p.get("1G"), t.get(5),     h, "16vos");
+        Equipo p83 = resolver(p.get("2K"), p.get("2L"),  h, "16vos");
+        Equipo p84 = resolver(p.get("1H"), p.get("2J"),  h, "16vos");
+        Equipo p85 = resolver(p.get("1B"), t.get(6),     h, "16vos");
+        Equipo p86 = resolver(p.get("1J"), p.get("2H"),  h, "16vos"); // ← España 2ªH
+        Equipo p87 = resolver(p.get("1K"), t.get(7),     h, "16vos");
+        Equipo p88 = resolver(p.get("2D"), p.get("2G"),  h, "16vos");
 
-        // OCTAVOS
-        Equipo p89 = resolver(p74, p77, h, "8vos");
-        Equipo p90 = resolver(p73, p75, h, "8vos");
-        Equipo p91 = resolver(p76, p78, h, "8vos");
-        Equipo p92 = resolver(p79, p80, h, "8vos");
-        Equipo p93 = resolver(p83, p84, h, "8vos");
-        Equipo p94 = resolver(p81, p82, h, "8vos");
-        Equipo p95 = resolver(p86, p88, h, "8vos");
-        Equipo p96 = resolver(p85, p87, h, "8vos");
+// OCTAVOS — cruces oficiales por número de partido
+        Equipo p89 = resolver(p74, p77, h, "8vos");   // G74 vs G77
+        Equipo p90 = resolver(p73, p75, h, "8vos");   // G73 vs G75
+        Equipo p91 = resolver(p76, p78, h, "8vos");   // G76 vs G78
+        Equipo p92 = resolver(p79, p80, h, "8vos");   // G79 vs G80
+        Equipo p93 = resolver(p83, p84, h, "8vos");   // G83 vs G84
+        Equipo p94 = resolver(p81, p82, h, "8vos");   // G81 vs G82
+        Equipo p95 = resolver(p86, p88, h, "8vos");   // G86 vs G88
+        Equipo p96 = resolver(p85, p87, h, "8vos");   // G85 vs G87
 
-        // CUARTOS
-        Equipo p97 = resolver(p89, p90, h, "4tos");
-        Equipo p98 = resolver(p93, p94, h, "4tos");
-        Equipo p99 = resolver(p91, p92, h, "4tos");
-        Equipo p100 = resolver(p95, p96, h, "4tos");
+// CUARTOS
+        Equipo p97  = resolver(p89, p90, h, "4tos");  // G89 vs G90
+        Equipo p98  = resolver(p93, p94, h, "4tos");  // G93 vs G94
+        Equipo p99  = resolver(p91, p92, h, "4tos");  // G91 vs G92
+        Equipo p100 = resolver(p95, p96, h, "4tos");  // G95 vs G96
 
-        // SEMIFINALES
-        Equipo p101 = resolver(p97, p98, h, "semis");
-        Equipo p102 = resolver(p99, p100, h, "semis");
+// SEMIFINALES
+        Equipo p101 = resolver(p97,  p98,  h, "semis");  // G97  vs G98
+        Equipo p102 = resolver(p99,  p100, h, "semis");  // G99  vs G100
 
-        // FINAL
+// FINAL
         Equipo campeon = resolver(p101, p102, h, "finalista");
         contarFase(h, campeon.getNombre(), "campeon");
     }
 
     private static Equipo resolver(Equipo e1, Equipo e2, Map<String, EstadisticasEquipo> h, String fase) {
-        Equipo ganador = SimuladorPartido.simularPartidoEliminatorio(e1, e2);
+        // 1. Obtenemos el objeto que contiene al ganador y el relato
+        SimuladorPartido.ResultadoPartida resultado = SimuladorPartido.simularPartidoEliminatorio(e1, e2);
+
+        // 2. Extraemos al ganador
+        Equipo ganador = resultado.ganador;
+
+        // 3. Identificamos al perdedor para las estadísticas de Montecarlo
         Equipo perdedor = (ganador == e1) ? e2 : e1;
         contarFase(h, perdedor.getNombre(), fase);
+
         return ganador;
     }
 

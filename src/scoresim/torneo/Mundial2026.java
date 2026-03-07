@@ -1,16 +1,19 @@
 package scoresim.torneo;
+import scoresim.SimuladorPartido;
 import scoresim.torneo.GrupoMundial;
 import scoresim.Equipo;
 import java.util.*;
 import scoresim.EquipoDAO;
+
 /**
  * Configuración oficial y completa de los 12 grupos del Mundial 2026.
  */
 public class Mundial2026 {
+
     public static List<GrupoMundial> crearMundialOficial() {
         List<GrupoMundial> mundial = new ArrayList<>();
 
-// GRUPO A: México, Sudáfrica, Corea del Sur, Ganador Ruta D UEFA
+        // GRUPO A: México, Sudáfrica, Corea del Sur, Ganador Ruta D UEFA
         GrupoMundial grupoA = new GrupoMundial("Grupo A");
         grupoA.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("México"));
         grupoA.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Sudáfrica"));
@@ -61,7 +64,7 @@ public class Mundial2026 {
         // GRUPO G: Bélgica, Egipto, Irán, Nueva Zelanda
         GrupoMundial grupoG = new GrupoMundial("Grupo G");
         grupoG.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Bélgica"));
-        grupoG.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Egipto")); // Corregido el punto faltante
+        grupoG.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Egipto"));
         grupoG.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Irán"));
         grupoG.agregarEquipo(new Equipo("Nueva Zelanda", 68.0, 70.0, 65.0, 50.0));
         mundial.add(grupoG);
@@ -70,7 +73,7 @@ public class Mundial2026 {
         GrupoMundial grupoH = new GrupoMundial("Grupo H");
         grupoH.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("España"));
         grupoH.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Cabo Verde"));
-        grupoH.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Arabia Saudí")); // Actualizado según tu lista
+        grupoH.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Arabia Saudí"));
         grupoH.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Uruguay"));
         mundial.add(grupoH);
 
@@ -103,43 +106,32 @@ public class Mundial2026 {
         grupoL.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Inglaterra"));
         grupoL.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Croacia"));
         grupoL.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Ghana"));
-        grupoL.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Panama")); // "Panama" sin tilde según tu lista
+        grupoL.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Panama"));
         mundial.add(grupoL);
 
         return mundial;
     }
 
-    /**
-     * Compara a los 12 terceros de todos los grupos y devuelve los 8 mejores.
-     */
     public static List<Equipo> obtenerMejoresTerceros(List<GrupoMundial> todosLosGrupos) {
         List<Equipo> terceros = new ArrayList<>();
-        // Mapa para recordar de qué grupo viene cada tercero y consultar sus stats
         Map<Equipo, GrupoMundial.EstadisticasGrupo> statsTerceros = new HashMap<>();
 
-        // 1. Recolectamos al 3º de cada uno de los 12 grupos
         for (GrupoMundial g : todosLosGrupos) {
             Equipo tercero = g.obtenerTercerLugar();
             terceros.add(tercero);
             statsTerceros.put(tercero, g.getEstadisticas(tercero));
         }
 
-        // 2. Ordenamos el Ranking de Terceros
         terceros.sort((a, b) -> {
             GrupoMundial.EstadisticasGrupo sA = statsTerceros.get(a);
             GrupoMundial.EstadisticasGrupo sB = statsTerceros.get(b);
-
-            // Puntos
             if (sB.puntos != sA.puntos) return Integer.compare(sB.puntos, sA.puntos);
-            // Diferencia de Goles
             int difA = sA.gFavor - sA.gContra;
             int difB = sB.gFavor - sB.gContra;
             if (difB != difA) return Integer.compare(difB, difA);
-            // Goles a Favor
             return Integer.compare(sB.gFavor, sA.gFavor);
         });
 
-        // 3. Imprimir el ranking por consola
         System.out.println("\n========== RANKING DE MEJORES TERCEROS ==========");
         System.out.printf("%-18s | %2s | %2s | %2s | %2s | %3s\n", "Selección", "PT", "PJ", "GF", "GC", "DIF");
         for (int i = 0; i < terceros.size(); i++) {
@@ -150,34 +142,153 @@ public class Mundial2026 {
                     e.getNombre(), s.puntos, s.partidos, s.gFavor, s.gContra, (s.gFavor - s.gContra), marca);
         }
 
-        // 4. Devolvemos solo los primeros 8
         return terceros.subList(0, 8);
     }
-        public static List<Equipo> obtenerMejoresTercerosSilencioso(List<GrupoMundial> mundial) {
-            List<Equipo> terceros = new ArrayList<>();
-            Map<Equipo, GrupoMundial.EstadisticasGrupo> statsTerceros = new HashMap<>();
 
-            for (GrupoMundial g : mundial) {
-                Equipo tercero = g.obtenerTercerLugar();
-                terceros.add(tercero);
-                statsTerceros.put(tercero, g.getEstadisticas(tercero));
-            }
+    public static List<Equipo> obtenerMejoresTercerosSilencioso(List<GrupoMundial> mundial) {
+        List<Equipo> terceros = new ArrayList<>();
+        Map<Equipo, GrupoMundial.EstadisticasGrupo> statsTerceros = new HashMap<>();
 
-            // Ordenar por puntos, diferencia de goles y goles a favor
-            terceros.sort((a, b) -> {
-                GrupoMundial.EstadisticasGrupo sA = statsTerceros.get(a);
-                GrupoMundial.EstadisticasGrupo sB = statsTerceros.get(b);
-                if (sB.puntos != sA.puntos) return Integer.compare(sB.puntos, sA.puntos);
-                int difA = sA.gFavor - sA.gContra;
-                int difB = sB.gFavor - sB.gContra;
-                if (difB != difA) return Integer.compare(difB, difA);
-                return Integer.compare(sB.gFavor, sA.gFavor);
-            });
-
-            return terceros; // Devuelve la lista ordenada pero NO imprime nada
+        for (GrupoMundial g : mundial) {
+            Equipo tercero = g.obtenerTercerLugar();
+            terceros.add(tercero);
+            statsTerceros.put(tercero, g.getEstadisticas(tercero));
         }
 
+        terceros.sort((a, b) -> {
+            GrupoMundial.EstadisticasGrupo sA = statsTerceros.get(a);
+            GrupoMundial.EstadisticasGrupo sB = statsTerceros.get(b);
+            if (sB.puntos != sA.puntos) return Integer.compare(sB.puntos, sA.puntos);
+            int difA = sA.gFavor - sA.gContra;
+            int difB = sB.gFavor - sB.gContra;
+            if (difB != difA) return Integer.compare(difB, difA);
+            return Integer.compare(sB.gFavor, sA.gFavor);
+        });
+
+        return terceros;
+    }
+
+    public String ejecutarSegundaFase(List<GrupoMundial> mundial) {
+        StringBuilder reporte = new StringBuilder();
+
+        // 1. RECOLECTAR CLASIFICADOS
+        List<Equipo> tercerosParaSorteo = Mundial2026.obtenerMejoresTercerosSilencioso(mundial);
+        Map<String, Equipo> primeros = new HashMap<>();
+        Map<String, Equipo> segundos = new HashMap<>();
+
+        for (GrupoMundial g : mundial) {
+            List<Equipo> clasificadosGrupo = g.getClasificacion();
+            String letra = g.getNombre().replace("Grupo ", "");
+            primeros.put(letra, clasificadosGrupo.get(0));
+            segundos.put(letra, clasificadosGrupo.get(1));
+        }
+        // 0. FASE DE GRUPOS
+        reporte.append("═".repeat(55)).append("\n");
+        reporte.append("         ⚽  FASE DE GRUPOS  ⚽\n");
+        reporte.append("═".repeat(55)).append("\n");
+        for (GrupoMundial g : mundial) {
+            // Partidos del grupo
+            reporte.append("\n▶ PARTIDOS - ").append(g.getNombre().toUpperCase()).append("\n");
+            for (String r : g.getResultados()) {
+                reporte.append("  ").append(r).append("\n");
+            }
+            // Tabla de posiciones
+            reporte.append(g.getTablaComoTexto());
+        }
+
+        reporte.append("\n--- 🏆 DIECISEISAVOS DE FINAL ---\n");
+        List<Equipo> ganadoresR32 = new ArrayList<>();
+
+        // ─── DIECISEISAVOS ───
+// P73: 2A vs 2B
+        ganadoresR32.add(simularYRegistrar(segundos.get("A"),  segundos.get("B"),          reporte));
+// P74: 1E vs 3(A/B/C/D/F)
+        ganadoresR32.add(simularYRegistrar(primeros.get("E"),  tercerosParaSorteo.get(0),  reporte));
+// P75: 1F vs 2C
+        ganadoresR32.add(simularYRegistrar(primeros.get("F"),  segundos.get("C"),          reporte));
+// P76: 1C vs 2F
+        ganadoresR32.add(simularYRegistrar(primeros.get("C"),  segundos.get("F"),          reporte));
+// P77: 1I vs 3(C/D/F/G/H)
+        ganadoresR32.add(simularYRegistrar(primeros.get("I"),  tercerosParaSorteo.get(1),  reporte));
+// P78: 2E vs 2I
+        ganadoresR32.add(simularYRegistrar(segundos.get("E"),  segundos.get("I"),          reporte));
+// P79: 1A vs 3(C/E/F/H/I)
+        ganadoresR32.add(simularYRegistrar(primeros.get("A"),  tercerosParaSorteo.get(2),  reporte));
+// P80: 1L vs 3(E/H/I/J/K)
+        ganadoresR32.add(simularYRegistrar(primeros.get("L"),  tercerosParaSorteo.get(3),  reporte));
+// P81: 1D vs 3(B/E/F/I/J)
+        ganadoresR32.add(simularYRegistrar(primeros.get("D"),  tercerosParaSorteo.get(4),  reporte));
+// P82: 1G vs 3(A/E/H/I/J)
+        ganadoresR32.add(simularYRegistrar(primeros.get("G"),  tercerosParaSorteo.get(5),  reporte));
+// P83: 2K vs 2L
+        ganadoresR32.add(simularYRegistrar(segundos.get("K"),  segundos.get("L"),          reporte));
+// P84: 1H vs 2J
+        ganadoresR32.add(simularYRegistrar(primeros.get("H"),  segundos.get("J"),          reporte));
+// P85: 1B vs 3(E/F/G/I/J)
+        ganadoresR32.add(simularYRegistrar(primeros.get("B"),  tercerosParaSorteo.get(6),  reporte));
+// P86: 1J vs 2H
+        ganadoresR32.add(simularYRegistrar(primeros.get("J"),  segundos.get("H"),          reporte));
+// P87: 1K vs 3(D/E/I/J/L)
+        ganadoresR32.add(simularYRegistrar(primeros.get("K"),  tercerosParaSorteo.get(7),  reporte));
+// P88: 2D vs 2G
+        ganadoresR32.add(simularYRegistrar(segundos.get("D"),  segundos.get("G"),          reporte));
 
 
+        reporte.append("\n").append("═".repeat(55)).append("\n\n");
+        reporte.append("\n✅ Dieciseisavos completados.\n");
 
+        // 3. OCTAVOS
+        reporte.append("\n--- 🏟️ OCTAVOS DE FINAL ---\n");
+        List<Equipo> ganadoresR16 = new ArrayList<>();
+        for (int i = 0; i < ganadoresR32.size(); i += 2) {
+            ganadoresR16.add(simularYRegistrar(ganadoresR32.get(i), ganadoresR32.get(i+1), reporte));
+        }
+
+        // 4. CUARTOS
+        reporte.append("\n--- 📊 CUARTOS DE FINAL ---\n");
+        List<Equipo> ganadoresR8 = new ArrayList<>();
+        for (int i = 0; i < ganadoresR16.size(); i += 2) {
+            ganadoresR8.add(simularYRegistrar(ganadoresR16.get(i), ganadoresR16.get(i+1), reporte));
+        }
+
+        // 5. SEMIFINALES
+        reporte.append("\n--- ⚡ SEMIFINALES ---\n");
+        Equipo ganadorS1 = simularYRegistrar(ganadoresR8.get(0), ganadoresR8.get(1), reporte);
+        Equipo perdedorS1 = (ganadorS1 == ganadoresR8.get(0)) ? ganadoresR8.get(1) : ganadoresR8.get(0);
+
+        Equipo ganadorS2 = simularYRegistrar(ganadoresR8.get(2), ganadoresR8.get(3), reporte);
+        Equipo perdedorS2 = (ganadorS2 == ganadoresR8.get(2)) ? ganadoresR8.get(3) : ganadoresR8.get(2);
+
+        // 6. TERCER PUESTO
+        reporte.append("\n🥉 TERCER PUESTO:\n");
+        Equipo tercerPuesto = simularYRegistrar(perdedorS1, perdedorS2, reporte);
+
+        // 7. GRAN FINAL
+        reporte.append("\n🏆 GRAN FINAL:\n");
+        Equipo campeon = simularYRegistrar(ganadorS1, ganadorS2, reporte);
+        Equipo subcampeon = (campeon == ganadorS1) ? ganadorS2 : ganadorS1;
+
+        // --- CUADRO DE HONOR EN EL REPORTE ---
+        reporte.append("\n").append("=".repeat(35)).append("\n");
+        reporte.append("🎊 ¡FINAL DEL MUNDIAL 2026! 🎊\n");
+        reporte.append("=".repeat(35)).append("\n");
+        reporte.append("🥇 CAMPEÓN:    ").append(campeon.getNombre().toUpperCase()).append("\n");
+        reporte.append("🥈 SUBCAMPEÓN: ").append(subcampeon.getNombre().toUpperCase()).append("\n");
+        reporte.append("🥉 3er PUESTO: ").append(tercerPuesto.getNombre().toUpperCase()).append("\n");
+        reporte.append("=".repeat(35)).append("\n");
+
+        return reporte.toString();
+    }
+
+    /**
+     * Método auxiliar para simular y registrar el relato en el reporte.
+     */
+    private Equipo simularYRegistrar(Equipo e1, Equipo e2, StringBuilder reporte) {
+        // Llamamos al motor que ahora devuelve ResultadoPartida
+        SimuladorPartido.ResultadoPartida rp = SimuladorPartido.simularPartidoEliminatorio(e1, e2);
+        // Añadimos el relato (con ⚔️ y resultados) al reporte global
+        reporte.append(rp.relato);
+        // Devolvemos el equipo ganador para la lógica de listas
+        return rp.ganador;
+    }
 }

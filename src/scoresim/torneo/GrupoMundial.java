@@ -1,7 +1,7 @@
 package scoresim.torneo;
 
-import scoresim.SimuladorPartido;
-import scoresim.Equipo;
+import scoresim.*;
+
 import java.util.*;
 
 /**
@@ -69,14 +69,29 @@ public class GrupoMundial {
      */
     private int ejecutarSimulacionGoles(SimuladorPartido motor, Equipo atacante, Equipo defensor, boolean esLocal) {
         int goles = 0;
-        // Simulamos 90 minutos de juego
-        for (int min = 0; min < 90; min++) {
-            // Usamos una probabilidad simplificada basada en el ataque vs defensa
-            double prob = 0.01 + (atacante.getAtaque() - defensor.getAtaque()) * 0.0005;
-            if (esLocal) prob *= 1.1; // Bono de localía
 
-            if (Math.random() < Math.max(0.005, Math.min(0.08, prob))) {
+        double fuerzaAtaque  = (atacante.getAtaque() * 0.6) + (atacante.getMedio() * 0.4);
+        double fuerzaDefensa = (defensor.getDefensa() * 0.6) + (defensor.getMedio() * 0.4);
+        double prob = 0.0133 * (fuerzaAtaque / fuerzaDefensa);
+        if (esLocal) prob *= 1.08;
+        prob = Math.max(0.0044, Math.min(0.039, prob));
+
+        // Solo cargamos titulares de DB si estamos en simulación única
+        List<Jugador> titularesAtacante = SimuladorPartido.modoMontecarlo
+                ? null
+                : EquipoDAO.obtenerTitulares(atacante.getNombre());
+
+        for (int min = 1; min <= 90; min++) {
+            if (Math.random() < prob) {
                 goles++;
+                // Solo registramos en DB en simulación única
+                if (!SimuladorPartido.modoMontecarlo && titularesAtacante != null) {
+                    SimuladorTorneo repartidor = new SimuladorTorneo();
+                    Jugador autor = repartidor.elegirGoleador(titularesAtacante);
+                    if (autor != null) {
+                        repartidor.registrarGolEnDB(autor.getId());
+                    }
+                }
             }
         }
         return goles;
@@ -205,5 +220,32 @@ public class GrupoMundial {
     }
     public String getNombre() {
         return this.nombre;
+    }
+    /**
+     * Devuelve la tabla de posiciones del grupo como un String formateado.
+     */
+    public String getTablaComoTexto() {
+        StringBuilder sb = new StringBuilder();
+        List<Equipo> clasificacion = getClasificacion();
+
+        sb.append("\nTABLA - ").append(nombre.toUpperCase()).append("\n");
+        sb.append(String.format("%-18s | %2s | %2s | %2s | %2s | %2s | %2s | %3s\n",
+                "Selección", "PT", "PJ", "PG", "PE", "PP", "GF", "DIF"));
+        sb.append("-".repeat(52)).append("\n");
+
+        for (Equipo e : clasificacion) {
+            EstadisticasGrupo s = tabla.get(e);
+            sb.append(String.format("%-18s | %2d | %2d | %2d | %2d | %2d | %2d | %3d\n",
+                    e.getNombre(), s.puntos, s.partidos, s.ganados, s.empatados,
+                    s.perdidos, s.gFavor, s.getDiferenciaGoles()));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Devuelve los resultados de los partidos del grupo.
+     */
+    public List<String> getResultados() {
+        return resultados;
     }
 }

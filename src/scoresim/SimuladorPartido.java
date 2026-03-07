@@ -1,81 +1,145 @@
 package scoresim;
 
+import scoresim.Jugador;
+import scoresim.EquipoDAO;
+import java.util.List;
 import java.util.Random;
-import scoresim.Equipo;
 
-/**
- * Clase encargada de ejecutar la lógica de simulación de un partido de fútbol.
- * Calcula las probabilidades de gol basadas en las estadísticas de los equipos.
- */
 public class SimuladorPartido {
-    private Random random;
+    private static final Random random = new Random();
+    private static final SimuladorTorneo motorStats = new SimuladorTorneo();
+    // TRUE = modo Montecarlo (no escribe en DB, no lee titulares)
+    public static boolean modoMontecarlo = false;
 
-    public SimuladorPartido() {
-        this.random = new Random();
-    }
-
-    /**
-     * Simula un partido de 90 minutos entre dos equipos.
-     * * @param local Equipo que juega en casa (recibe bono por localía).
-     * @param visitante Equipo que juega fuera.
-     * @return 1 si gana el local, -1 si gana el visitante, 0 si hay empate.
-     */
-    public int simular(Equipo local, Equipo visitante){
-
-        // --- CÁLCULO DE POTENCIALES ---
-        // Se calcula el potencial ofensivo sumando el ataque y la mitad del control del mediocampo.
-        double ataqLocal = local.getAtaque() + (local.getMedio() * 0.5);
-        double ataqVisitante = visitante.getAtaque() + (visitante.getMedio() * 0.5);
-
-        // Se calcula la resistencia defensiva
-        double defVisitante = visitante.getDefensa() + (visitante.getMedio() * 0.5);
-        double defLocal = local.getDefensa() + (local.getMedio() * 0.5);
-
-        // --- CÁLCULO DE PROBABILIDADES POR MINUTO ---
-
-        // Diferencia de nivel para el equipo local
-        double difLocal = ataqLocal - defVisitante;
-        // Probabilidad base de anotar en un minuto dado
-        double probLocal = 0.01 + (difLocal * 0.0005);
-        // Ajuste de límites (min 0.5%, max 8%) y aplicación del 10% de ventaja por campo propio
-        probLocal = Math.max(0.005, Math.min(0.08, probLocal * 1.1));
-
-        // Diferencia de nivel para el equipo visitante
-        double difVisitante = ataqVisitante - defLocal;
-        double probVisitante = 0.01 + (difVisitante * 0.0005);
-        // El visitante no recibe el bono del 10%
-        probVisitante = Math.max(0.005, Math.min(0.08, probVisitante));
-
-
-        // --- BUCLE DE SIMULACIÓN (90 MINUTOS) ---
-        int golesLocal = 0;
-        int golesVisitante = 0;
-
-        for(int i = 0; i < 90; i++){
-            // En cada minuto, si un número aleatorio es menor a la probabilidad, se marca gol
-            if(Math.random() < probLocal) golesLocal++;
-            if(Math.random() < probVisitante) golesVisitante++;
+    public static int[] simular(Equipo local, Equipo visitante) {
+        if (modoMontecarlo) {
+            // Modo rápido: solo probabilidades, sin DB
+            return simularRapido(local, visitante);
         }
 
-        // Retorna el resultado:
-        // 1 (Ganador Local), -1 (Ganador Visitante), 0 (Empate)
-        return Integer.compare(golesLocal, golesVisitante);
+        // Modo completo (simulación única): lee titulares y escribe stats
+        List<Jugador> titularesL = EquipoDAO.obtenerTitulares(local.getNombre());
+        List<Jugador> titularesV = EquipoDAO.obtenerTitulares(visitante.getNombre());
+        registrarPJs(titularesL);
+        registrarPJs(titularesV);
+
+        double probLocal = calcularProbabilidad(local, visitante, true);
+        double probVisitante = calcularProbabilidad(visitante, local, false);
+        int golesL = 0, golesV = 0;
+
+        for (int i = 1; i <= 90; i++) {
+            if (random.nextDouble() < probLocal) {
+                golesL++;
+                asignarEvento(titularesL, "goles");
+            }
+            if (random.nextDouble() < probVisitante) {
+                golesV++;
+                asignarEvento(titularesV, "goles");
+            }
+            if (random.nextDouble() < 0.005) asignarEvento(titularesL, "tarjetas_amarillas");
+            if (random.nextDouble() < 0.005) asignarEvento(titularesV, "tarjetas_amarillas");
+        }
+        procesarStatsPortero(titularesL, golesV);
+        procesarStatsPortero(titularesV, golesL);
+        return new int[]{golesL, golesV};
+    }
+
+    // Nuevo método: simulación pura sin ninguna llamada a DB
+    private static int[] simularRapido(Equipo local, Equipo visitante) {
+        double probLocal     = calcularProbabilidad(local, visitante, true);
+        double probVisitante = calcularProbabilidad(visitante, local, false);
+        int golesL = 0, golesV = 0;
+
+        for (int i = 1; i <= 90; i++) {
+            if (random.nextDouble() < probLocal)     golesL++;
+            if (random.nextDouble() < probVisitante) golesV++;
+        }
+        return new int[]{golesL, golesV};
+    }
+
+    // --- MÉTODOS AUXILIARES DE PERSISTENCIA ---
+
+    private static void asignarEvento(List<Jugador> jugadores, String columna) {
+        Jugador seleccionado = motorStats.elegirGoleador(jugadores); // Reutilizamos lógica de peso por posición
+        if (seleccionado != null) {
+            motorStats.registrarEstadistica(seleccionado.getId(), columna);
+        }
+    }
+
+    private static void registrarPJs(List<Jugador> jugadores) {
+        for(Jugador j : jugadores) {
+            motorStats.registrarEstadistica(j.getId(), "partidos_jugados");
+        }
+    }
+
+    private static void procesarStatsPortero(List<Jugador> jugadores, int golesRecibidos) {
+        for(Jugador j : jugadores) {
+            if(j.getPosicion().equals("POR")) {
+                if(golesRecibidos == 0) motorStats.registrarEstadistica(j.getId(), "porterias_imbatidas");
+                // Para goles encajados, necesitamos un método que sume N goles, no solo 1
+                motorStats.registrarSumaEstadistica(j.getId(), "goles_encajados", golesRecibidos);
+                break;
+            }
+        }
+    }
+
+    private static double calcularProbabilidad(Equipo off, Equipo def, boolean localia) {
+        // Fuerza ofensiva vs fuerza defensiva rival, normalizadas sobre 100
+        double fuerzaAtaque  = (off.getAtaque() * 0.6) + (off.getMedio() * 0.4);
+        double fuerzaDefensa = (def.getDefensa() * 0.6) + (def.getMedio() * 0.4);
+        // Base: un equipo de media 75 vs media 75 marca ~1.2 goles/partido
+        double base = 0.0133; // 1.2 goles / 90 minutos
+        // Ratio de calidad: si atacas con 85 contra defensa de 65, ratio = 85/65 = 1.31
+        double ratio = fuerzaAtaque / fuerzaDefensa;
+        // Escalar con el ratio: marca diferencia real entre equipos buenos y malos
+        double prob = base * ratio;
+        // Bonus de localía del 8%
+        if (localia) prob *= 1.08;
+        // Límites: mínimo 0.4 goles/partido (0.0044/min), máximo 3.5 (0.039/min)
+        return Math.max(0.0044, Math.min(0.039, prob));
     }
 
     /**
-     * Simula un partido de eliminación directa (Knockout).
-     * Si hay empate en los 90 min, se decide por calidad y azar (simulando prórroga/penaltis).
+     * Simula un partido eliminatorio.
+     * Al ser estático, puede llamar a simular() porque ahora también es estático.
      */
-    public static Equipo simularPartidoEliminatorio(Equipo e1, Equipo e2) {
-        // 1. Simulamos el tiempo regular usando la lógica de potenciales
-        double fuerzaE1 = (e1.getAtaque() * 0.5) + (e1.getMedio() * 0.3) + (e1.getDefensa() * 0.2);
-        double fuerzaE2 = (e2.getAtaque() * 0.5) + (e2.getMedio() * 0.3) + (e2.getDefensa() * 0.2);
+    public static ResultadoPartida simularPartidoEliminatorio(Equipo e1, Equipo e2) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("⚔️ ELIMINATORIA: ").append(e1.getNombre()).append(" vs ").append(e2.getNombre()).append("\n");
 
-        // 2. Añadimos un factor de azar mayor para representar la tensión de eliminatorias
-        // Esto cubre indirectamente los eventos de prórroga y penaltis
-        double azarE1 = Math.random() * 20;
-        double azarE2 = Math.random() * 20;
+        int[] res = simular(e1, e2);
+        sb.append("   Resultado: ").append(res[0]).append(" - ").append(res[1]).append("\n");
 
-        return (fuerzaE1 + azarE1 > fuerzaE2 + azarE2) ? e1 : e2;
+        if (res[0] > res[1]) {
+            sb.append("   ✅ Avanza: ").append(e1.getNombre()).append("\n");
+            return new ResultadoPartida(e1, sb.toString());
+        }
+        if (res[1] > res[0]) {
+            sb.append("   ✅ Avanza: ").append(e2.getNombre()).append("\n");
+            return new ResultadoPartida(e2, sb.toString());
+        }
+
+        // Lógica de penaltis
+        sb.append("   ⚖️ Empate... ¡PENALTIS!\n");
+        double f1 = e1.getAtaque() + e1.getMedio() + e1.getDefensa();
+        double f2 = e2.getAtaque() + e2.getMedio() + e2.getDefensa();
+
+        if ((f1 + random.nextDouble() * 50) > (f2 + random.nextDouble() * 50)) {
+            sb.append("   🎯 Gana ").append(e1.getNombre()).append(" en la tanda.\n");
+            return new ResultadoPartida(e1, sb.toString());
+        } else {
+            sb.append("   🎯 Gana ").append(e2.getNombre()).append(" en la tanda.\n");
+            return new ResultadoPartida(e2, sb.toString());
+        }
     }
+    public static class ResultadoPartida {
+        public Equipo ganador;
+        public String relato;
+
+        public ResultadoPartida(Equipo ganador, String relato) {
+            this.ganador = ganador;
+            this.relato = relato;
+        }
+    }
+
 }

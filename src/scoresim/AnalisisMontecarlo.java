@@ -8,12 +8,11 @@ import scoresim.Equipo;
  */
 public class AnalisisMontecarlo {
 
-    private SimuladorPartido simulador;
     private int iteraciones;
 
     public AnalisisMontecarlo(int iteraciones) {
         this.iteraciones = iteraciones;
-        this.simulador = new SimuladorPartido();
+        // Ya no necesitamos instanciar SimuladorPartido aquí
     }
 
     /**
@@ -25,12 +24,19 @@ public class AnalisisMontecarlo {
         int vVisitante = 0;
 
         for (int i = 0; i < iteraciones; i++) {
-            // El simulador devuelve: 1 (Local), 0 (Empate), -1 (Visitante)
-            int resultado = simulador.simular(local, visitante);
+            // LLAMADA ESTÁTICA: Usamos el nombre de la Clase directamente
+            int[] marcador = SimuladorPartido.simular(local, visitante);
 
-            if (resultado > 0) vLocal++;
-            else if (resultado < 0) vVisitante++;
-            else empates++;
+            int golesL = marcador[0];
+            int golesV = marcador[1];
+
+            if (golesL > golesV) {
+                vLocal++;
+            } else if (golesV > golesL) {
+                vVisitante++;
+            } else {
+                empates++;
+            }
         }
 
         return new ResultadoEstadistico(
@@ -43,9 +49,7 @@ public class AnalisisMontecarlo {
         );
     }
 
-    /**
-     * Clase interna para almacenar y formatear los datos finales del análisis.
-     */
+    // --- El resto de la clase ResultadoEstadistico se mantiene igual ---
     public static class ResultadoEstadistico {
         private String nombreLocal;
         private String nombreVisitante;
@@ -65,7 +69,6 @@ public class AnalisisMontecarlo {
 
         @Override
         public String toString() {
-            // Cálculo de porcentajes para una lectura más humana
             double pctLocal = (victoriasLocal / (double) total) * 100.0;
             double pctVisitante = (victoriasVisitante / (double) total) * 100.0;
             double pctEmpate = (empates / (double) total) * 100.0;

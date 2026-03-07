@@ -1,8 +1,7 @@
 package scoresim;
 
 import java.sql.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class EquipoDAO {
     private static Map<String, Equipo> cacheEquipos = new HashMap<>();
@@ -48,7 +47,34 @@ public class EquipoDAO {
         return new Equipo(pais, 70.0, 70.0, 70.0, 50.0);
     }
 
+    public static List<Jugador> obtenerTitulares(String pais) {
+        List<Jugador> lista = new ArrayList<>();
+        String sql = "SELECT id, nombre, apellido, posicion, valoracion_global, nacionalidad " +
+                "FROM jugadores WHERE nacionalidad = ? AND rol = 'TITULAR'";
+
+        try (Connection conn = ConexionBD.conectar();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, pais);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                lista.add(new Jugador(
+                        rs.getInt("id"),
+                        rs.getString("nombre"),
+                        rs.getString("apellido"),
+                        rs.getString("posicion"),
+                        rs.getInt("valoracion_global"),
+                        rs.getString("nacionalidad")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return lista;
+    }
     public static void limpiarCache() {
         cacheEquipos.clear();
     }
+
 }

@@ -191,15 +191,36 @@ public class VentanaGestion extends JFrame {
 
         // Acción de Simular: Lanza el hilo de simulación masiva
         btnSimular.addActionListener(e -> {
+            // Desactivamos el botón para evitar clics dobles
+            btnSimular.setEnabled(false);
+
             new SwingWorker<Map<String, scoresim.EstadisticasEquipo>, Void>() {
-                @Override protected Map<String, scoresim.EstadisticasEquipo> doInBackground() {
-                    return ScoreSimApp.ejecutarSimulacionDesdeUI(); // Lógica pesada en segundo plano
+                @Override
+                protected Map<String, scoresim.EstadisticasEquipo> doInBackground() {
+                    // Ejecuta los 10,000 mundiales (Montecarlo)
+                    return scoresim.ScoreSimApp.ejecutarSimulacionDesdeUI();
                 }
-                @Override protected void done() {
+
+                @Override
+                protected void done() {
                     try {
-                        // Al terminar, abre la ventana de resultados
-                        new VentanaReporte(get(), 10000).setVisible(true);
-                    } catch (Exception ex) { ex.printStackTrace(); }
+                        Map<String, scoresim.EstadisticasEquipo> historial = get();
+
+                        // Generamos una crónica textual del Mundial #10,001 para el reporte
+                        scoresim.torneo.Mundial2026 mundialLógica = new scoresim.torneo.Mundial2026();
+                        List<scoresim.torneo.GrupoMundial> grupos = scoresim.torneo.Mundial2026.crearMundialOficial();
+
+                        // Esto genera el String que espera tu VentanaReporte
+                        String cronicaFinal = mundialLógica.ejecutarSegundaFase(grupos);
+
+                        // Abrimos la ventana con: Historial, Total (10000) y la Crónica
+                        new scoresim.visual.VentanaReporte(historial, 10000, cronicaFinal).setVisible(true);
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    } finally {
+                        btnSimular.setEnabled(true);
+                    }
                 }
             }.execute();
         });
