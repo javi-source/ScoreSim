@@ -2,30 +2,45 @@ package scoresim;
 
 import scoresim.torneo.GrupoMundial;
 import scoresim.torneo.Mundial2026;
+
+import javax.swing.*;
 import java.util.*;
 
 public class ScoreSimApp {
 
+    // Método principal original para seguir lanzándolo desde consola
     public static void main(String[] args) {
+        try {
+            // Esto pone el estilo del sistema operativo actual
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        SwingUtilities.invokeLater(() -> {
+            new scoresim.visual.VentanaPrincipal().setVisible(true);
+        });
+    }
+
+    // Este método ejecutarSimulacionDesdeUI es el que llamará el botón de la ventana visual.
+
+    public static Map<String, EstadisticasEquipo> ejecutarSimulacionDesdeUI() {
         int numSimulaciones = 10000;
-        // Mapa para guardar: Nombre Equipo -> Objeto con contadores de fases
         Map<String, EstadisticasEquipo> historialGlobal = new HashMap<>();
 
         System.out.println("Iniciando simulación masiva de 10,000 Mundiales...");
         long tiempoInicio = System.currentTimeMillis();
 
         for (int i = 0; i < numSimulaciones; i++) {
-            // 1. IMPORTANTE: Usamos un nombre de variable distinto ('listaGrupos')
-            // para evitar el error "already defined"
+            // crearMundialOficial ahora usará el EquipoDAO con los cambios de Lamine Yamal
             List<GrupoMundial> listaGrupos = Mundial2026.crearMundialOficial();
             Map<String, Equipo> p = new HashMap<>();
 
-            // Simular Grupos
             for (GrupoMundial g : listaGrupos) {
+                // Pasamos el motor de simulación para que sea eficiente
                 g.simularJornada();
                 List<Equipo> clasificados = g.getClasificacion();
 
-                // Extraer letra (ej: "Grupo A" -> "A")
                 String nombreG = g.getNombre();
                 String letra = nombreG.substring(nombreG.length() - 1);
 
@@ -33,22 +48,20 @@ public class ScoreSimApp {
                 p.put("2" + letra, clasificados.get(1));
                 p.put("3" + letra, clasificados.get(2));
 
-                // Registrar al 4to eliminado en fase de grupos
                 contarFase(historialGlobal, clasificados.get(3).getNombre(), "grupos");
             }
 
-            // 2. Mejores Terceros (8 pasan, 4 fuera)
             List<Equipo> tercerosRanked = Mundial2026.obtenerMejoresTercerosSilencioso(listaGrupos);
             for (int j = 8; j < tercerosRanked.size(); j++) {
                 contarFase(historialGlobal, tercerosRanked.get(j).getNombre(), "grupos");
             }
 
-            // 3. Fase Eliminatoria (Siguiendo tu cuadro)
             ejecutarEliminatorias(p, tercerosRanked, historialGlobal);
         }
 
         long tiempoFin = System.currentTimeMillis();
         imprimirReporteFinal(historialGlobal, numSimulaciones, tiempoFin - tiempoInicio);
+        return historialGlobal;
     }
 
     private static void ejecutarEliminatorias(Map<String, Equipo> p, List<Equipo> t, Map<String, EstadisticasEquipo> h) {

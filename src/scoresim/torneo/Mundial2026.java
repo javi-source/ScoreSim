@@ -2,7 +2,7 @@ package scoresim.torneo;
 import scoresim.torneo.GrupoMundial;
 import scoresim.Equipo;
 import java.util.*;
-
+import scoresim.EquipoDAO;
 /**
  * Configuración oficial y completa de los 12 grupos del Mundial 2026.
  */
@@ -10,104 +10,105 @@ public class Mundial2026 {
     public static List<GrupoMundial> crearMundialOficial() {
         List<GrupoMundial> mundial = new ArrayList<>();
 
-        // GRUPO A: México, Sudáfrica, Corea del Sur, Ganador Ruta D UEFA
+// GRUPO A: México, Sudáfrica, Corea del Sur, Ganador Ruta D UEFA
         GrupoMundial grupoA = new GrupoMundial("Grupo A");
-        grupoA.agregarEquipo(new Equipo("México", 79, 81, 78));
-        grupoA.agregarEquipo(new Equipo("Sudáfrica", 72, 74, 73));
-        grupoA.agregarEquipo(new Equipo("Corea del Sur", 78, 80, 79));
-        grupoA.agregarEquipo(new Equipo("UEFA Ruta D", 75, 76, 75));
+        grupoA.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("México"));
+        grupoA.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Sudáfrica"));
+        grupoA.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Corea del Sur"));
+        grupoA.agregarEquipo(new Equipo("UEFA Ruta D", 71, 66, 70, 50.0));
         mundial.add(grupoA);
 
         // GRUPO B: Canadá, Ruta A UEFA, Catar, Suiza
         GrupoMundial grupoB = new GrupoMundial("Grupo B");
-        grupoB.agregarEquipo(new Equipo("Canadá", 77, 78, 76));
-        grupoB.agregarEquipo(new Equipo("UEFA Ruta A", 81, 80, 80));
-        grupoB.agregarEquipo(new Equipo("Catar", 71, 73, 70));
-        grupoB.agregarEquipo(new Equipo("Suiza", 82, 83, 82));
+        grupoB.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Canadá"));
+        grupoB.agregarEquipo(new Equipo("UEFA Ruta A", 70, 70, 70, 50.0));
+        grupoB.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Catar"));
+        grupoB.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Suiza"));
         mundial.add(grupoB);
 
         // GRUPO C: Brasil, Marruecos, Haití, Escocia
         GrupoMundial grupoC = new GrupoMundial("Grupo C");
-        grupoC.agregarEquipo(new Equipo("Brasil", 90, 87, 88));
-        grupoC.agregarEquipo(new Equipo("Marruecos", 82, 84, 85));
-        grupoC.agregarEquipo(new Equipo("Haití", 68, 65, 66));
-        grupoC.agregarEquipo(new Equipo("Escocia", 76, 79, 78));
+        grupoC.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Brasil"));
+        grupoC.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Marruecos"));
+        grupoC.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Haití"));
+        grupoC.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Escocia"));
         mundial.add(grupoC);
 
         // GRUPO D: Estados Unidos, Paraguay, Australia, Ruta C UEFA
         GrupoMundial grupoD = new GrupoMundial("Grupo D");
-        grupoD.agregarEquipo(new Equipo("Estados Unidos", 81, 82, 80));
-        grupoD.agregarEquipo(new Equipo("Paraguay", 76, 77, 79));
-        grupoD.agregarEquipo(new Equipo("Australia", 75, 76, 77));
-        grupoD.agregarEquipo(new Equipo("UEFA Ruta C", 78, 79, 78));
+        grupoD.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Estados Unidos"));
+        grupoD.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Paraguay"));
+        grupoD.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Australia"));
+        grupoD.agregarEquipo(new Equipo("UEFA Ruta C", 70.0, 70.0, 70.0, 50.0));
         mundial.add(grupoD);
 
         // GRUPO E: Alemania, Curazao, Costa de Marfil, Ecuador
         GrupoMundial grupoE = new GrupoMundial("Grupo E");
-        grupoE.agregarEquipo(new Equipo("Alemania", 87, 88, 85));
-        grupoE.agregarEquipo(new Equipo("Curazao", 65, 66, 65));
-        grupoE.agregarEquipo(new Equipo("Costa de Marfil", 80, 81, 79));
-        grupoE.agregarEquipo(new Equipo("Ecuador", 79, 81, 82));
+        grupoE.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Alemania"));
+        grupoE.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Curazao"));
+        grupoE.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Costa de Marfil"));
+        grupoE.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Ecuador"));
         mundial.add(grupoE);
 
         // GRUPO F: Países Bajos, Japón, Ruta B UEFA, Túnez
         GrupoMundial grupoF = new GrupoMundial("Grupo F");
-        grupoF.agregarEquipo(new Equipo("Países Bajos", 86, 88, 87));
-        grupoF.agregarEquipo(new Equipo("Japón", 81, 82, 80));
-        grupoF.agregarEquipo(new Equipo("UEFA Ruta B", 79, 78, 77));
-        grupoF.agregarEquipo(new Equipo("Túnez", 74, 75, 75));
+        grupoF.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Países Bajos"));
+        grupoF.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Japón"));
+        grupoF.agregarEquipo(new Equipo("UEFA Ruta B", 65.0, 75.0, 67.0, 50.0));
+        grupoF.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Túnez"));
         mundial.add(grupoF);
 
         // GRUPO G: Bélgica, Egipto, Irán, Nueva Zelanda
         GrupoMundial grupoG = new GrupoMundial("Grupo G");
-        grupoG.agregarEquipo(new Equipo("Bélgica", 84, 85, 82));
-        grupoG.agregarEquipo(new Equipo("Egipto", 79, 77, 76));
-        grupoG.agregarEquipo(new Equipo("Irán", 75, 76, 78));
-        grupoG.agregarEquipo(new Equipo("Nueva Zelanda", 68, 70, 71));
+        grupoG.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Bélgica"));
+        grupoG.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Egipto")); // Corregido el punto faltante
+        grupoG.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Irán"));
+        grupoG.agregarEquipo(new Equipo("Nueva Zelanda", 68.0, 70.0, 65.0, 50.0));
         mundial.add(grupoG);
 
-        // GRUPO H: España, Cabo Verde, Arabia Saudita, Uruguay
+        // GRUPO H: España, Cabo Verde, Arabia Saudí, Uruguay
         GrupoMundial grupoH = new GrupoMundial("Grupo H");
-        grupoH.agregarEquipo(new Equipo("España", 88, 94, 86));
-        grupoH.agregarEquipo(new Equipo("Cabo Verde", 70, 71, 72));
-        grupoH.agregarEquipo(new Equipo("Arabia Saudita", 73, 75, 72));
-        grupoH.agregarEquipo(new Equipo("Uruguay", 85, 84, 86));
+        grupoH.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("España"));
+        grupoH.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Cabo Verde"));
+        grupoH.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Arabia Saudí")); // Actualizado según tu lista
+        grupoH.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Uruguay"));
         mundial.add(grupoH);
 
         // GRUPO I: Francia, Senegal, Repesca B, Noruega
         GrupoMundial grupoI = new GrupoMundial("Grupo I");
-        grupoI.agregarEquipo(new Equipo("Francia", 91, 83, 89));
-        grupoI.agregarEquipo(new Equipo("Senegal", 80, 81, 81));
-        grupoI.agregarEquipo(new Equipo("Repesca Llave B", 74, 73, 72));
-        grupoI.agregarEquipo(new Equipo("Noruega", 82, 80, 78));
+        grupoI.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Francia"));
+        grupoI.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Senegal"));
+        grupoI.agregarEquipo(new Equipo("Repesca Llave B", 70.0, 70.0, 70.0, 50.0));
+        grupoI.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Noruega"));
         mundial.add(grupoI);
 
         // GRUPO J: Argentina, Argelia, Austria, Jordania
         GrupoMundial grupoJ = new GrupoMundial("Grupo J");
-        grupoJ.agregarEquipo(new Equipo("Argentina", 88, 88, 91));
-        grupoJ.agregarEquipo(new Equipo("Argelia", 78, 79, 77));
-        grupoJ.agregarEquipo(new Equipo("Austria", 81, 82, 80));
-        grupoJ.agregarEquipo(new Equipo("Jordania", 70, 71, 69));
+        grupoJ.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Argentina"));
+        grupoJ.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Argelia"));
+        grupoJ.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Austria"));
+        grupoJ.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Jordania"));
         mundial.add(grupoJ);
 
         // GRUPO K: Portugal, Repesca A, Uzbekistán, Colombia
         GrupoMundial grupoK = new GrupoMundial("Grupo K");
-        grupoK.agregarEquipo(new Equipo("Portugal", 88, 87, 85));
-        grupoK.agregarEquipo(new Equipo("Repesca Llave A", 74, 73, 72));
-        grupoK.agregarEquipo(new Equipo("Uzbekistán", 73, 75, 74));
-        grupoK.agregarEquipo(new Equipo("Colombia", 83, 81, 82));
+        grupoK.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Portugal"));
+        grupoK.agregarEquipo(new Equipo("Repesca Llave A", 70.0, 68.0, 69.0, 50.0));
+        grupoK.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Uzbekistán"));
+        grupoK.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Colombia"));
         mundial.add(grupoK);
 
         // GRUPO L: Inglaterra, Croacia, Ghana, Panamá
         GrupoMundial grupoL = new GrupoMundial("Grupo L");
-        grupoL.agregarEquipo(new Equipo("Inglaterra", 88, 87, 87));
-        grupoL.agregarEquipo(new Equipo("Croacia", 79, 88, 81));
-        grupoL.agregarEquipo(new Equipo("Ghana", 76, 77, 75));
-        grupoL.agregarEquipo(new Equipo("Panamá", 73, 74, 73));
+        grupoL.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Inglaterra"));
+        grupoL.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Croacia"));
+        grupoL.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Ghana"));
+        grupoL.agregarEquipo(EquipoDAO.obtenerEquipoDesdeDB("Panama")); // "Panama" sin tilde según tu lista
         mundial.add(grupoL);
 
         return mundial;
     }
+
     /**
      * Compara a los 12 terceros de todos los grupos y devuelve los 8 mejores.
      */
@@ -138,7 +139,7 @@ public class Mundial2026 {
             return Integer.compare(sB.gFavor, sA.gFavor);
         });
 
-        // 3. Imprimir el ranking por consola para que el usuario lo vea
+        // 3. Imprimir el ranking por consola
         System.out.println("\n========== RANKING DE MEJORES TERCEROS ==========");
         System.out.printf("%-18s | %2s | %2s | %2s | %2s | %3s\n", "Selección", "PT", "PJ", "GF", "GC", "DIF");
         for (int i = 0; i < terceros.size(); i++) {
